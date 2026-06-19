@@ -8,26 +8,21 @@ https://github.com/ChackDan/Service-Fabric/tree/master/ARM%20Templates/ReversePr
 
 1. Create a new certificate and Upload to Key Vault (multiple options)
 
-    a. Create with any reputable CA
+   a. Create with any reputable CA
 
-    b. Generate Selfsigned, Import existing certs using Azure Portal -> Key Vault - https://blogs.technet.microsoft.com/kv/2016/09/26/get-started-with-azure-key-vault-certificates/
+   b. Generate Selfsigned, Import existing certs using Azure Portal -> Key Vault - https://blogs.technet.microsoft.com/kv/2016/09/26/get-started-with-azure-key-vault-certificates/
 
-    c. Create and Upload using PowerShell - [CreateKeyVaultAndCertificateForServiceFabric.ps1](../Scripts/CreateKeyVaultAndCertificateForServiceFabric.ps1)
+   c. Create and Upload using PowerShell - [CreateKeyVaultAndCertificateForServiceFabric.ps1](../Scripts/CreateKeyVaultAndCertificateForServiceFabric.ps1)
+2. Using [Resource Explorer](https://portal.azure.com/#view/Microsoft_Azure_Resources/ResourceManagerBlade/~/resourceexplorer) in [Resource Manager](https://portal.azure.com/#view/Microsoft_Azure_Resources/ResourceManagerBlade/~/overview), navigate to your Virtual Machine Scale Set resource. For detailed instructions on modifying VMSS resources using Resource Explorer, see [Managing Azure Resources](../Deployment/managing-azure-resources.md).
 
-
-2. Go to <https://resources.azure.com> and find your subscription \-- \> resource group \-- \> providers/Microsoft.Compute/virtualMachineScaleSets \-- \> your VMSS
-
-![Azure Resource Explorer](../media/resourcemgr1.png)
-
-3. Click \"Edit\" and \"Read/Write\" permission
-
-![Edit](../media/resourcemgr2.png)
-![Read/Write](../media/resourcemgr3.png)
-
-
-4. Update the VirtualMachineProfile for each nodetype, to add (aka **Deploy**) the new certificate to the VMMS
+   Find your subscription → resource group → Resources/Microsoft.Compute/virtualMachineScaleSets → your VMSS
+   
+   The current configuration will be automatically displayed.
+3. Click **EDIT** to modify the configuration.
+4. Update the VirtualMachineProfile for each nodetype to add (aka **Deploy**) the new certificate to the VMSS
 
 >> a. If the new certificate is in the **same Key Vault** as the Primary add it to the array of 'vaultCertificates' as shown below
+>>
 
 ```json
     "virtualMachineProfile": {
@@ -57,6 +52,7 @@ https://github.com/ChackDan/Service-Fabric/tree/master/ARM%20Templates/ReversePr
 ```
 
 >> b. If the new certificate is in a **different Key Vault** as the Primary add an additional secret to the array of 'secrets' as shown below, or alternatively use [Add new cert to VMSS](../Scripts/Add_New_Cert_To_VMSS.ps1)
+>>
 
 ```json
 "virtualMachineProfile": {
@@ -135,11 +131,10 @@ https://github.com/ChackDan/Service-Fabric/tree/master/ARM%20Templates/ReversePr
             },
 ```
 
-* And then scroll back to the top of the page and click PUT.
-
-    ![Click PUT](../media/resourcemgr7.png)
-
-6. Back in Azure Portal the VMMS resource will move to a 'Updating' status, **wait** to get back to \"Succeeded\" status before updating the Service Fabric cluster settings (step 7):
+6. Click the **PATCH** button to submit the modified configuration.
+   
+   ![Successful PATCH notification](../media/managing-azure-resources/resource-explorer-vmss-successful-patch-notification.png)
+7. Back in Azure Portal the VMMS resource will move to a 'Updating' status, **wait** to get back to \"Succeeded\" status before updating the Service Fabric cluster settings (step 8):
 
 ![WordCount
 Virtual machine scale set
@@ -149,9 +144,13 @@ Status
 Succeeded
 ](../media/resourcemgr4.png)
 
-7. Next edit the Microsoft.ServiceFabric provider for your cluster
+8. Next, using [Resource Explorer](https://portal.azure.com/#view/Microsoft_Azure_Resources/ResourceManagerBlade/~/resourceexplorer), navigate to the Service Fabric cluster resource:
 
-* Adding \"thumbprintSecondary\": \"ED37DFE6F4ED42182998F314FD633B2F042ABC32\" setting
+   Find your subscription → resource group → Resources/Microsoft.ServiceFabric/clusters → your cluster
+   
+   The current configuration will be automatically displayed. Click **EDIT** to modify it.
+
+* Add the "thumbprintSecondary": "ED37DFE6F4ED42182998F314FD633B2F042ABC32" setting:
 
 ```json
   "type": "Microsoft.ServiceFabric/clusters",
@@ -173,14 +172,11 @@ Succeeded
     }
 ```
 
-8. **Wait** for the SF cluster Updating the secondary certificate to complete
-
-![Azure Portal •  Service Fabric cluster  • status  • Updating user certificate](../media/resourcemgr6.png)
+9. Click the **PUT** button to update the Service Fabric cluster resource. **Wait** for the SF cluster to complete updating the secondary certificate. You can monitor the cluster status in the Azure Portal by clicking **GET** and checking the provisioningState property.
 
 * FAQ: [Why do cluster upgrades take so long](../Cluster/Why%20do%20cluster%20upgrades%20take%20so%20long.md)
 
-
-9. Swap the values of "reverseProxyCertificate" and "reverseProxySecondaryCertificate" properties in the VMMS resource
+10. Swap the values of "reverseProxyCertificate" and "reverseProxySecondaryCertificate" properties in the VMMS resource
 
 ```json
 "virtualMachineProfile": {
@@ -216,11 +212,8 @@ Succeeded
             },
 ```
 
-* And then scroll back to the top of the page and click PUT and Wait for the update to complete.
-
-    ![Click PUT](../media/resourcemgr7.png)
-
-10. Swap the "reverseProxyCertificate" property values for "thumbprint" and "thumbprintSecondary" for the ServiceFabric Cluster resource
+11. Navigate back to the VMSS resource in the tree, click **EDIT**, swap the certificate thumbprints as shown in step 10, then click the **PATCH** button to submit the update. Wait for the update to complete by periodically clicking **GET** and checking the provisioningState property.
+12. Swap the "reverseProxyCertificate" property values for "thumbprint" and "thumbprintSecondary" for the ServiceFabric Cluster resource
 
 ```json
   "type": "Microsoft.ServiceFabric/clusters",
@@ -242,17 +235,10 @@ Succeeded
     }
 ```
 
-* And then scroll back to the top of the page and click PUT and Wait for the update to complete.
-
-    ![Click PUT](../media/resourcemgr7.png)
-
-11. When the cluster updates are complete you should be able to verify the certificate thumbprints have swapped by checking from Service Fabric Explorer -> Cluster -> Manifest
+13. Navigate back to the cluster resource in the tree, click **EDIT**, swap the certificate thumbprints as shown in step 12, then click the **PUT** button to update the Service Fabric cluster resource. Wait for the update to complete by periodically clicking **GET** and checking the provisioningState property.
+14. When the cluster updates are complete you should be able to verify the certificate thumbprints have swapped by checking from Service Fabric Explorer -> Cluster -> Manifest
     ![Manifest](../media/rpcertswap_image003.PNG)
 
-* Or in the Azure portal > Cluster -> Security 
+* Or in the Azure portal > Cluster -> Security
 
-    ![Portal -> Cluster -> Security](../media/rpcertswap_image004.PNG)
-
-* Feel free to delete the old certificate at this point (now in the Secondary)
-
-
+  ![Portal -> Cluster -> Security](../media/rpcertswap_image004.PNG)* Feel free to delete the old certificate at this point (now in the Secondary)

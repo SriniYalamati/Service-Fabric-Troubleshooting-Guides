@@ -16,25 +16,22 @@ If cluster is deployed and maintained by using ARM template, edit template.json 
 
 ![vscode wadcfg](../media/template-wadcfg.png)
 
-If cluster was deployed from Azure portal and template was not saved, use https://resources.azure.com. Navigate to 'subscription', 'resourceGroups', {{ resource group }}, 'providers', 'Microsoft.Compute', 'virtualMachineScaleSets', {{ nodetype }}.  
+If cluster was deployed from Azure portal and template was not saved, use [Resource Manager - Resource Explorer](https://portal.azure.com/#view/Microsoft_Azure_Resources/ResourceManagerBlade/~/resourceexplorer) in the Azure Portal. For detailed instructions on viewing and modifying VMSS resources, see [Managing Azure Resources](../Deployment/managing-azure-resources.md). Navigate to 'subscription', 'ResourceGroups', {{ resource group }}, 'Resources', 'Microsoft.Compute', 'virtualMachineScaleSets', {{ nodetype }}.  
 
 ```text
     subscriptions
     └───%subscription name%
-        └───resourceGroups
+        └───ResourceGroups
             └───%resource group name%
-                └───providers
+                └───Resources
                     └───Microsoft.Compute
                         └───virtualMachineScaleSets
                             └───%virtual machine scale set name%
 ```
 
-Click "Read/Write" permission and "Edit" to edit configuration.
+The current VMSS configuration will be automatically displayed. Click **EDIT** to modify it, then click **PATCH** to submit changes. See [Managing Azure Resources](../Deployment/managing-azure-resources.md) for detailed instructions.
 
-![Read/Write](../media/resourcemgr3.png)  
-![Edit](../media/resourcemgr2.png)
-
-![resources.azure wadcfg](../media/resources-azure-wadcfg.png)
+![resources.azure wadcfg](../media/managing-azure-resources/resource-vmss-wadcfg.png)
 
 ### IaaSDiagnostics default WadCfg
 
@@ -227,9 +224,7 @@ VERBOSE: 17:58:51 - Template is valid.
 PS C:\>New-AzResourceGroupDeployment -ResourceGroupName servicefabriccluster -TemplateFile .\template.json -DeploymentDebugLogLevel all -Verbose
 ```
 
-If using https://resources.azure.com, in 'Edit' configuration, after all changes have been made, select 'PATCH' to update the configuration. Status of update will be viewable in [Azure portal](https://portal.azure.com).
-
-![Click PATCH](../media/resourcemgr7.png)
+If using [Resource Explorer](https://portal.azure.com/#view/Microsoft_Azure_Resources/ResourceManagerBlade/~/resourceexplorer), after all changes have been made using EDIT mode, click the **PATCH** button to update the configuration. Status of update will be viewable in [Azure portal](https://portal.azure.com). For detailed instructions, see [Managing Azure Resources](../Deployment/managing-azure-resources.md).
 
 ## Validating configuration
 
@@ -455,10 +450,8 @@ C:\\Packages\\Plugins\\Microsoft.Azure.Diagnostics.IaaSDiagnostics\\1.18.0.5\\St
 
 Cause: 'Sinks' configuration needs empty 'resourceId' placeholder to define sink as 'Azure Monitor'
 
-### resources.azure.com
+### Resource Explorer troubleshooting
 
-To troubleshoot errors while modifying a resource configuration, for example, an exclamation or warning icon is temporarily displayed, scroll to the bottom of the page and review the error:
+To troubleshoot errors while modifying a resource configuration using [Resource Explorer](https://portal.azure.com/#view/Microsoft_Azure_Resources/ResourceManagerBlade/~/resourceexplorer), review the response notifications for error messages. After clicking **PATCH** or **PUT**, any validation failures or issues will be displayed in an error notification. For detailed instructions, see [Managing Azure Resources](../Deployment/managing-azure-resources.md).
 
-![resources.azure.com error icon](../media/resourcemgr12.png)
 
-![resources.azure.com error icon](../media/resourcemgr13.png)
